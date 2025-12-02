@@ -193,23 +193,16 @@
                     @if($doors->count() > 0)
                         <div class="grid grid-cols-2 gap-4">
                             @foreach($doors as $door)
-                                <div class="relative group">
+                                <div class="relative group cursor-pointer" onclick="openModal('{{ asset('storage/' . $door->image_path) }}', '{{ $door->name }}')">
                                     <img src="{{ asset('storage/' . $door->image_path) }}" 
                                          alt="{{ $door->name }}"
-                                         class="w-full h-48 object-cover rounded-lg shadow-lg transition group-hover:opacity-90">
+                                         class="w-full h-48 object-cover rounded-lg shadow-lg transition group-hover:scale-105 group-hover:shadow-2xl">
                                     <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3 rounded-b-lg">
                                         <p class="text-white font-bold">{{ $door->name }}</p>
                                     </div>
-                                    <form action="{{ route('doors.destroy', $door) }}" method="POST" 
-                                          class="absolute top-2 right-2"
-                                          onsubmit="return confirm('Delete this door?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" 
-                                                class="bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition">
-                                            ×
-                                        </button>
-                                    </form>
+                                    <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition bg-black/20 rounded-lg">
+                                        <span class="text-white text-4xl">🔍</span>
+                                    </div>
                                 </div>
                             @endforeach
                         </div>
@@ -225,5 +218,41 @@
             <p>🎄 Happy Holidays! • Made with ❤️ for internal use</p>
         </div>
     </div>
+
+    <!-- Image Preview Modal -->
+    <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-90 hidden items-center justify-center z-50" onclick="closeModal()">
+        <div class="relative max-w-7xl max-h-screen p-4" onclick="event.stopPropagation()">
+            <button onclick="closeModal()" class="absolute top-8 right-8 text-white text-4xl font-bold hover:text-gray-300 z-10">
+                ×
+            </button>
+            <img id="modalImage" src="" alt="" class="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl">
+            <div class="text-center mt-4">
+                <p id="modalTitle" class="text-white text-2xl font-bold"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openModal(imageSrc, title) {
+            document.getElementById('modalImage').src = imageSrc;
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('imageModal').classList.remove('hidden');
+            document.getElementById('imageModal').classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('imageModal').classList.add('hidden');
+            document.getElementById('imageModal').classList.remove('flex');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
 </body>
 </html>
