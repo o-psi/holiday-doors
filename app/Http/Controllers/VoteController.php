@@ -10,6 +10,11 @@ class VoteController extends Controller
 {
     public function store(Request $request)
     {
+        // Check if voting is enabled
+        if (!config('voting.enabled')) {
+            return redirect()->route('home')->with('error', 'Voting is currently disabled.');
+        }
+
         $validated = $request->validate([
             'voter_name' => 'required|string|max:255',
             'votes' => 'required|array|min:1|max:3',

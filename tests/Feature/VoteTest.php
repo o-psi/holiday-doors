@@ -13,6 +13,8 @@ class VoteTest extends TestCase
 
     public function test_can_submit_votes_with_valid_data(): void
     {
+        config(['voting.enabled' => true]);
+
         $door1 = Door::create(['name' => 'Alice', 'image_path' => 'doors/door1.jpg']);
         $door2 = Door::create(['name' => 'Bob', 'image_path' => 'doors/door2.jpg']);
         $door3 = Door::create(['name' => 'Charlie', 'image_path' => 'doors/door3.jpg']);
@@ -46,6 +48,8 @@ class VoteTest extends TestCase
 
     public function test_can_submit_partial_votes(): void
     {
+        config(['voting.enabled' => true]);
+
         $door1 = Door::create(['name' => 'Alice', 'image_path' => 'doors/door1.jpg']);
         $door2 = Door::create(['name' => 'Bob', 'image_path' => 'doors/door2.jpg']);
 
@@ -60,6 +64,8 @@ class VoteTest extends TestCase
 
     public function test_cannot_vote_without_voter_name(): void
     {
+        config(['voting.enabled' => true]);
+
         $door1 = Door::create(['name' => 'Alice', 'image_path' => 'doors/door1.jpg']);
 
         $response = $this->post('/vote', [
@@ -72,6 +78,8 @@ class VoteTest extends TestCase
 
     public function test_cannot_vote_without_any_votes(): void
     {
+        config(['voting.enabled' => true]);
+
         $response = $this->post('/vote', [
             'voter_name' => 'John Doe',
             'votes' => [],
@@ -83,6 +91,8 @@ class VoteTest extends TestCase
 
     public function test_cannot_vote_for_nonexistent_door(): void
     {
+        config(['voting.enabled' => true]);
+
         $response = $this->post('/vote', [
             'voter_name' => 'John Doe',
             'votes' => [999],
@@ -94,6 +104,8 @@ class VoteTest extends TestCase
 
     public function test_replaces_existing_votes_for_same_voter(): void
     {
+        config(['voting.enabled' => true]);
+
         $door1 = Door::create(['name' => 'Alice', 'image_path' => 'doors/door1.jpg']);
         $door2 = Door::create(['name' => 'Bob', 'image_path' => 'doors/door2.jpg']);
         $door3 = Door::create(['name' => 'Charlie', 'image_path' => 'doors/door3.jpg']);
@@ -136,6 +148,8 @@ class VoteTest extends TestCase
 
     public function test_different_voters_can_vote_independently(): void
     {
+        config(['voting.enabled' => true]);
+
         $door1 = Door::create(['name' => 'Alice', 'image_path' => 'doors/door1.jpg']);
         $door2 = Door::create(['name' => 'Bob', 'image_path' => 'doors/door2.jpg']);
 
@@ -190,6 +204,8 @@ class VoteTest extends TestCase
 
     public function test_ranking_calculation_for_multiple_doors(): void
     {
+        config(['voting.enabled' => true]);
+
         $door1 = Door::create(['name' => 'Alice', 'image_path' => 'doors/door1.jpg']);
         $door2 = Door::create(['name' => 'Bob', 'image_path' => 'doors/door2.jpg']);
         $door3 = Door::create(['name' => 'Charlie', 'image_path' => 'doors/door3.jpg']);
@@ -220,5 +236,48 @@ class VoteTest extends TestCase
         $this->assertEquals(8, $door1->fresh()->getTotalPoints());
         $this->assertEquals(6, $door2->fresh()->getTotalPoints());
         $this->assertEquals(4, $door3->fresh()->getTotalPoints());
+    }
+
+    public function test_cannot_vote_when_voting_is_disabled(): void
+    {
+        config(['voting.enabled' => false]);
+
+        $door1 = Door::create(['name' => 'Alice', 'image_path' => 'doors/door1.jpg']);
+        $door2 = Door::create(['name' => 'Bob', 'image_path' => 'doors/door2.jpg']);
+
+        $response = $this->post('/vote', [
+            'voter_name' => 'John Doe',
+            'votes' => [$door1->id, $door2->id],
+        ]);
+
+        $response->assertRedirect(route('home'));
+        $response->assertSessionHas('error', 'Voting is currently disabled.');
+        $this->assertDatabaseCount('votes', 0);
+    }
+
+    public function test_voting_form_hidden_when_disabled(): void
+    {
+        config(['voting.enabled' => false]);
+
+        Door::create(['name' => 'Alice', 'image_path' => 'doors/door1.jpg']);
+
+        $response = $this->get('/');
+
+        $response->assertStatus(200);
+        $response->assertSee('Voting Not Open Yet');
+        $response->assertDontSee('Submit Votes');
+    }
+
+    public function test_voting_form_visible_when_enabled(): void
+    {
+        config(['voting.enabled' => true]);
+
+        Door::create(['name' => 'Alice', 'image_path' => 'doors/door1.jpg']);
+
+        $response = $this->get('/');
+
+        $response->assertStatus(200);
+        $response->assertSee('Submit Votes');
+        $response->assertDontSee('Voting Not Open Yet');
     }
 }

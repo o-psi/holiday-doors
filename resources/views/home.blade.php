@@ -20,6 +20,12 @@
             </div>
         @endif
 
+        @if(session('error'))
+            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded mb-8 shadow">
+                <p class="font-bold">✗ {{ session('error') }}</p>
+            </div>
+        @endif
+
         <!-- Two Column Layout -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
             
@@ -61,15 +67,16 @@
                 <div class="bg-white rounded-2xl shadow-xl p-8 border-4 border-green-200">
                     <h2 class="text-3xl font-bold mb-6 text-green-600">🗳️ Vote Now!</h2>
                     
-                    <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 mb-6">
-                        <p class="font-semibold text-blue-800">How to Vote:</p>
-                        <ul class="list-disc list-inside text-blue-700 text-sm mt-2">
-                            <li>Pick your Top 3 favorite doors</li>
-                            <li>1st place = 3 points • 2nd = 2 points • 3rd = 1 point</li>
-                        </ul>
-                    </div>
+                    @if(config('voting.enabled'))
+                        <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 mb-6">
+                            <p class="font-semibold text-blue-800">How to Vote:</p>
+                            <ul class="list-disc list-inside text-blue-700 text-sm mt-2">
+                                <li>Pick your Top 3 favorite doors</li>
+                                <li>1st place = 3 points • 2nd = 2 points • 3rd = 1 point</li>
+                            </ul>
+                        </div>
 
-                    <form action="{{ route('vote.store') }}" method="POST" class="space-y-4">
+                        <form action="{{ route('vote.store') }}" method="POST" class="space-y-4">
                         @csrf
                         <div>
                             <label class="block text-lg font-semibold mb-2">Your Name</label>
@@ -119,6 +126,12 @@
                             <p class="text-gray-500 text-center py-4">No doors yet! Upload the first one!</p>
                         @endif
                     </form>
+                    @else
+                        <div class="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-6 text-center">
+                            <p class="text-yellow-800 font-semibold text-lg mb-2">⏳ Voting Not Open Yet</p>
+                            <p class="text-yellow-700">Voting will be enabled soon. Check back later!</p>
+                        </div>
+                    @endif
                 </div>
             </div>
 

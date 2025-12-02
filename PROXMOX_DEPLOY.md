@@ -67,6 +67,9 @@ server {
     server_name _;
     root /var/www/holiday-doors/public;
     
+    # Allow uploads up to 10MB (for door photos)
+    client_max_body_size 10M;
+    
     index index.php;
     
     location / {
